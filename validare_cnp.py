@@ -2,11 +2,6 @@ import tkinter as tk
 from tkinter import font as tkfont
 import calendar
 
-s  = int(cnp[0])
-aa = cnp[1:3]
-ll = cnp[3:5]
-zz = cnp[5:7]
-
 def validate_cnp(raw):
     cnp = raw.strip()
 
@@ -37,6 +32,17 @@ def validate_cnp(raw):
     max_day = calendar.monthrange(year, month)[1]
     if day < 1 or day > max_day:
         return False, f"Invalid CNP: birth day ({day}) is not valid for month {month:02d}/{year}."
+
+    WEIGHTS = [2, 7, 9, 1, 4, 6, 3, 5, 8, 2, 7, 9]
+    jj = cnp[7:9]
+    c  = int(cnp[12])
+
+    total = sum(int(cnp[i]) * WEIGHTS[i] for i in range(12))
+    remainder = total % 11
+    expected = 1 if remainder == 10 else remainder
+
+    if c != expected:
+        return False, f"Invalid CNP: control digit is incorrect (expected: {expected}, found: {c})."
 
     return True, "Length validation passed."
 
