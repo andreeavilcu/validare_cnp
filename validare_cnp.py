@@ -22,13 +22,13 @@ def validate_cnp(raw):
     cnp = raw.strip()
 
     if cnp == "":
-        return False, "Invalid CNP: the field cannot be empty."
+        return False, "Invalid CNP: the field cannot be empty.", None
     
     if not cnp.isdigit():
-        return False, "Invalid CNP: must contain digits only (no letters, spaces or special characters)."
+        return False, "Invalid CNP: must contain digits only (no letters, spaces or special characters).", None
     
     if len(cnp) != 13:
-        return False, f"Invalid CNP: length must be exactly 13 digits (you entered {len(cnp)})."
+        return False, f"Invalid CNP: length must be exactly 13 digits (you entered {len(cnp)}).", None
 
     s  = int(cnp[0])
     aa = int(cnp[1:3])
@@ -38,18 +38,18 @@ def validate_cnp(raw):
     c  = int(cnp[12])
 
     if s < 1 or s > 9:
-        return False, "Invalid CNP: first digit (sex) must be between 1 and 9."
+        return False, "Invalid CNP: first digit (sex) must be between 1 and 9.", None
     
     month = int(ll)
     day   = int(zz)
     year  = 1900 + int(aa) if s in (1, 2) else 2000 + int(aa)
 
     if month < 1 or month > 12:
-        return False, "Invalid CNP: birth month is invalid (must be between 01 and 12)."
+        return False, "Invalid CNP: birth month is invalid (must be between 01 and 12).", None
 
     max_day = calendar.monthrange(year, month)[1]
     if day < 1 or day > max_day:
-        return False, f"Invalid CNP: birth day ({day}) is not valid for month {month:02d}/{year}."
+        return False, f"Invalid CNP: birth day ({day}) is not valid for month {month:02d}/{year}.", None
 
     if jj not in COUNTIES:
         return False, f"CNP invalid: codul județului ({jj}) nu este valid.", None
@@ -58,14 +58,23 @@ def validate_cnp(raw):
     expected = 1 if remainder == 10 else remainder
 
     if c != expected:
-        return False, f"Invalid CNP: control digit is incorrect (expected: {expected}, found: {c})."
+        return False, f"Invalid CNP: control digit is incorrect (expected: {expected}, found: {c}).", None
 
-    return True, "Length validation passed."
+    info = {
+        "Sex":          "Male" if s in (1, 3, 5, 7, 9) else "Female",
+        "Date of birth": f"{day:02d}/{month:02d}/{year}",
+        "County":       COUNTIES[jj],
+    }
+    return True, "CNP is valid.", info
+
 
 def on_verify():
     raw = entry.get()
-    valid, message = validate_cnp(raw)
+    valid, message, info = validate_cnp(raw)
     result_label.config(text=message)
+    info_label.config(
+        text="\n".join(f"{k}: {v}" for k, v in info.items()) if valid else ""
+    )
 
     display = raw.strip() if raw.strip() else "(empty)"
     history.insert(0, (display, valid))
@@ -81,6 +90,9 @@ def on_verify():
                  font=("Courier New", 9)).pack(anchor="w")
 root = tk.Tk()
 root.title("CNP Validator")
+
+info_label = tk.Label(root, text="", font=("Segoe UI", 10), justify="left")
+info_label.pack(padx=20, pady=5)
 
 entry = tk.Entry(root, font=("Courier New", 14), width=20)
 entry.pack(padx=20, pady=10)
