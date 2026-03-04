@@ -1,5 +1,11 @@
 import tkinter as tk
 from tkinter import font as tkfont
+import calendar
+
+s  = int(cnp[0])
+aa = cnp[1:3]
+ll = cnp[3:5]
+zz = cnp[5:7]
 
 def validate_cnp(raw):
     cnp = raw.strip()
@@ -12,6 +18,25 @@ def validate_cnp(raw):
     
     if len(cnp) != 13:
         return False, f"Invalid CNP: length must be exactly 13 digits (you entered {len(cnp)})."
+
+    s  = int(cnp[0])
+    aa = int(cnp[1:3])
+    ll = int(cnp[3:5])
+    zz = int(cnp[5:7])
+
+    if s < 1 or s > 9:
+        return False, "Invalid CNP: first digit (sex) must be between 1 and 9."
+    
+    month = int(ll)
+    day   = int(zz)
+    year  = 1900 + int(aa) if s in (1, 2) else 2000 + int(aa)
+
+    if month < 1 or month > 12:
+        return False, "Invalid CNP: birth month is invalid (must be between 01 and 12)."
+
+    max_day = calendar.monthrange(year, month)[1]
+    if day < 1 or day > max_day:
+        return False, f"Invalid CNP: birth day ({day}) is not valid for month {month:02d}/{year}."
 
     return True, "Length validation passed."
 
