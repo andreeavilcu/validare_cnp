@@ -7,6 +7,9 @@ def validate_cnp(raw):
     if cnp == "":
         return False, "Invalid CNP: the field cannot be empty."
     
+    if not cnp.isdigit():
+        return False, "Invalid CNP: must contain digits only (no letters, spaces or special characters)."
+    
     if len(cnp) != 13:
         return False, f"Invalid CNP: length must be exactly 13 digits (you entered {len(cnp)})."
 
