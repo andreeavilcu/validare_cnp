@@ -63,9 +63,22 @@ def validate_cnp(raw):
     return True, "Length validation passed."
 
 def on_verify():
-    valid, message = validate_cnp(entry.get())
+    raw = entry.get()
+    valid, message = validate_cnp(raw)
     result_label.config(text=message)
 
+    display = raw.strip() if raw.strip() else "(empty)"
+    history.insert(0, (display, valid))
+    if len(history) > 8:
+        history.pop()
+
+    for w in history_frame.winfo_children():
+        w.destroy()
+    for cnp_item, v in history:
+        tk.Label(history_frame,
+                 text=f"{'✔' if v else '✖'}  {cnp_item}",
+                 fg="green" if v else "red",
+                 font=("Courier New", 9)).pack(anchor="w")
 root = tk.Tk()
 root.title("CNP Validator")
 
@@ -76,5 +89,10 @@ tk.Button(root, text="Validate", command=on_verify).pack(pady=5)
 
 result_label = tk.Label(root, text="", font=("Segoe UI", 10), wraplength=300)
 result_label.pack(padx=20, pady=10)
+
+history_frame = tk.Frame(root)
+history_frame.pack(padx=20, pady=5, fill="x")
+
+history = []
 
 root.mainloop()
